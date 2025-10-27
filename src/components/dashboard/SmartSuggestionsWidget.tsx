@@ -126,9 +126,9 @@ export const SmartSuggestionsWidget: React.FC<SmartSuggestionsWidgetProps> = ({
 
   const urgencyColors = {
     high: {
-      bg: 'from-red-500/20 to-orange-500/20',
-      border: 'border-red-500/40',
-      text: 'text-red-400',
+      bg: 'from-blue-400/20 to-teal-400/20',
+      border: 'border-blue-400/40',
+      text: 'text-blue-300',
       pulse: 'animate-pulse',
     },
     medium: {

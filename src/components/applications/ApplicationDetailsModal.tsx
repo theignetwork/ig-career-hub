@@ -34,6 +34,9 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
 
   useEffect(() => {
     if (isOpen && applicationId) {
+      // Clear cached data and fetch fresh data from database
+      setApplication(null)
+      setActivities([])
       fetchApplicationDetails()
     }
   }, [isOpen, applicationId])

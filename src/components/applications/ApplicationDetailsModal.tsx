@@ -2,23 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { SmartToolsSection } from './SmartToolsSection'
-
-interface Application {
-  id: string
-  company_name: string
-  position_title: string
-  job_url?: string
-  job_description?: string
-  location?: string
-  salary_range?: string
-  remote_type?: string
-  status: string
-  date_applied: string
-  notes?: string
-  source?: string
-  resume_id?: string
-  cover_letter_id?: string
-}
+import type { Application } from '@/lib/api/applications'
 
 interface Activity {
   id: string

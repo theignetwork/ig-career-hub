@@ -16,6 +16,9 @@ export interface Application {
   remote_type?: string
   status: 'applied' | 'phone_screen' | 'interview' | 'offer' | 'rejected'
   date_applied: string
+  source?: string
+  resume_id?: string
+  cover_letter_id?: string
   notes?: string
   created_at: string
   updated_at: string

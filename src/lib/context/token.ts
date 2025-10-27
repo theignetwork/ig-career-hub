@@ -2,13 +2,13 @@
  * JWT Token generation for secure context sharing
  */
 
-import { SignJWT, jwtVerify } from 'jose'
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 
 const SECRET = new TextEncoder().encode(
   process.env.NEXT_PUBLIC_CONTEXT_SHARING_SECRET || process.env.CONTEXT_SHARING_SECRET || 'your-secret-key-here'
 )
 
-export interface TokenPayload {
+export interface TokenPayload extends JWTPayload {
   userId: string
   applicationId: string
   scope: 'read' | 'read-write'

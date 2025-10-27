@@ -59,6 +59,11 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
 
   const [status, setStatus] = useState('applied')
 
+  // Interview scheduling state
+  const [interviewDate, setInterviewDate] = useState('')
+  const [interviewTime, setInterviewTime] = useState('')
+  const [interviewType, setInterviewType] = useState<'phone' | 'video' | 'onsite' | 'technical'>('video')
+
   // Pre-populate form when editing
   useEffect(() => {
     if (editingApplication) {
@@ -83,8 +88,37 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
       if (editingApplication.job_description) {
         setJobInput(editingApplication.job_description)
       }
+
+      // Fetch existing interview data if status is phone_screen or interview
+      if (editingApplication.status === 'phone_screen' || editingApplication.status === 'interview') {
+        fetchInterviewData(editingApplication.id)
+      }
     }
   }, [editingApplication])
+
+  // Fetch interview data for editing
+  const fetchInterviewData = async (applicationId: string) => {
+    try {
+      const response = await fetch(`/api/interviews?application_id=${applicationId}`)
+      if (response.ok) {
+        const data = await response.json()
+        const interview = data.interviews?.[0]
+
+        if (interview) {
+          // Parse the interview datetime
+          const dateTime = new Date(interview.interview_date)
+          const date = dateTime.toISOString().split('T')[0] // YYYY-MM-DD
+          const time = dateTime.toTimeString().slice(0, 5) // HH:MM
+
+          setInterviewDate(date)
+          setInterviewTime(time)
+          setInterviewType(interview.interview_type || 'video')
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching interview data:', error)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -166,6 +200,49 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
 
       if (!response.ok) throw new Error(`Failed to ${isEditing ? 'update' : 'create'} application`)
 
+      const applicationData = await response.json()
+      const applicationId = isEditing ? editingApplication.id : applicationData.id
+
+      // If interview date is provided and status is interview or phone_screen, create/update interview
+      if (interviewDate && (status === 'interview' || status === 'phone_screen')) {
+        const interviewDateTime = interviewTime
+          ? `${interviewDate}T${interviewTime}:00`
+          : `${interviewDate}T09:00:00` // Default to 9 AM if no time specified
+
+        // First, check if an interview already exists for this application
+        const existingInterviewsResponse = await fetch(`/api/interviews?application_id=${applicationId}`)
+        let existingInterview = null
+
+        if (existingInterviewsResponse.ok) {
+          const existingInterviews = await existingInterviewsResponse.json()
+          existingInterview = existingInterviews.interviews?.[0] // Get the first interview if any
+        }
+
+        if (existingInterview) {
+          // Update existing interview
+          await fetch(`/api/interviews/${existingInterview.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              interview_date: interviewDateTime,
+              interview_type: interviewType,
+            }),
+          })
+        } else {
+          // Create new interview
+          await fetch('/api/interviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              application_id: applicationId,
+              interview_date: interviewDateTime,
+              interview_type: interviewType,
+              prepared: false,
+            }),
+          })
+        }
+      }
+
       router.refresh()
       if (onSuccess) onSuccess()
       onClose()
@@ -190,6 +267,9 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
       notes: '',
     })
     setStatus('applied')
+    setInterviewDate('')
+    setInterviewTime('')
+    setInterviewType('video')
     setError(null)
     setActiveTab('quick')
   }
@@ -517,6 +597,59 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
                   <option value="withdrawn">Withdrawn</option>
                 </select>
               </div>
+
+              {/* Interview Scheduling Section - Only show for phone_screen and interview statuses */}
+              {(status === 'phone_screen' || status === 'interview') && (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">📅</span>
+                    <h3 className="text-sm font-semibold text-white">Interview Schedule</h3>
+                    <span className="text-xs text-gray-400">(Optional - helps with dashboard reminders)</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Interview Date
+                      </label>
+                      <input
+                        type="date"
+                        value={interviewDate}
+                        onChange={(e) => setInterviewDate(e.target.value)}
+                        className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-[#0D9488]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Interview Time
+                      </label>
+                      <input
+                        type="time"
+                        value={interviewTime}
+                        onChange={(e) => setInterviewTime(e.target.value)}
+                        className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-[#0D9488]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Interview Type
+                    </label>
+                    <select
+                      value={interviewType}
+                      onChange={(e) => setInterviewType(e.target.value as 'phone' | 'video' | 'onsite' | 'technical')}
+                      className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-[#0D9488]"
+                    >
+                      <option value="phone">Phone</option>
+                      <option value="video">Video</option>
+                      <option value="onsite">On-site</option>
+                      <option value="technical">Technical</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">

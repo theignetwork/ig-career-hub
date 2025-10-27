@@ -19,6 +19,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { href: '/dashboard/interviews', label: 'Interviews', icon: '🎤' },
     { href: '/dashboard/documents', label: 'Documents', icon: '📄' },
     { href: '/dashboard/goals', label: 'Goals', icon: '🎯' },
+    { href: '/dashboard/help', label: 'Help', icon: '❓' },
   ]
 
   return (

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
 // GET - Fetch single application
@@ -55,6 +56,10 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Revalidate dashboard to reflect status changes
+    revalidatePath('/dashboard')
+    revalidatePath('/applications')
+
     return NextResponse.json(data)
   } catch (error) {
     console.error('[PATCH /api/applications/[id]] Error:', error)
@@ -96,6 +101,10 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Revalidate dashboard and applications pages
+    revalidatePath('/dashboard')
+    revalidatePath('/applications')
+
     return NextResponse.json(data)
   } catch (error) {
     console.error('[PUT /api/applications/[id]] Error:', error)
@@ -123,6 +132,10 @@ export async function DELETE(
       console.error('[DELETE /api/applications/[id]] Error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Revalidate dashboard and applications pages to clear cache
+    revalidatePath('/dashboard')
+    revalidatePath('/applications')
 
     return NextResponse.json({ success: true })
   } catch (error) {

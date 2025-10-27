@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
@@ -58,6 +59,10 @@ export async function POST(request: Request) {
       console.error('[POST /api/applications] Error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Revalidate dashboard and applications pages
+    revalidatePath('/dashboard')
+    revalidatePath('/applications')
 
     return NextResponse.json(data, { status: 201 })
   } catch (error) {

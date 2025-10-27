@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase/server'
+import type { Application } from './applications'
 
 // ===========================
 // TypeScript Types
@@ -36,20 +37,6 @@ export interface PipelineApplication {
   position: string
   stage: string
   date?: string
-}
-
-export interface Application {
-  id: string
-  company_name: string
-  position_title: string
-  job_url?: string
-  job_description?: string
-  location?: string
-  salary_range?: string
-  remote_type?: string
-  status: 'applied' | 'phone_screen' | 'interview' | 'offer' | 'rejected'
-  date_applied: string
-  notes?: string
 }
 
 // ===========================

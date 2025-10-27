@@ -7,6 +7,7 @@ import { QuickActionsWidget } from '@/components/dashboard/QuickActionsWidget'
 import { ApplicationPipeline } from '@/components/dashboard/ApplicationPipeline'
 import { ToolkitGrid } from '@/components/dashboard/ToolkitGrid'
 import { SmartSuggestionsWidget } from '@/components/dashboard/SmartSuggestionsWidget'
+import { WelcomeBanner } from '@/components/ui/WelcomeBanner'
 import {
   getDashboardStats,
   getUpcomingInterviews,
@@ -48,6 +49,9 @@ export default async function DashboardPage() {
     <DashboardLayout>
       <DashboardClient>
         <div className="space-y-6">
+          {/* Welcome Banner for first-time users */}
+          <WelcomeBanner />
+
           {/* Section 1: Your Journey at a Glance */}
           <JourneyOverview stats={stats} />
 

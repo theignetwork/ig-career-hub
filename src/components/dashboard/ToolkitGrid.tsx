@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useToolLauncher } from '@/lib/context/useToolLauncher'
+import { InfoTooltip } from '@/components/ui/InfoTooltip'
 import type { ToolType } from '@/lib/context/types'
 
 export const ToolkitGrid: React.FC = () => {
@@ -74,7 +75,13 @@ export const ToolkitGrid: React.FC = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <h2 className="text-xl font-semibold text-white">Your Toolkit</h2>
+      <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+        Your Toolkit
+        <InfoTooltip
+          content="Launch any tool directly from here. Click an application to use Smart Context - it auto-fills tools with your job details!"
+          position="right"
+        />
+      </h2>
 
       {/* Tools Grid - 3 columns, 2 rows */}
       <div className="grid grid-cols-3 gap-3">

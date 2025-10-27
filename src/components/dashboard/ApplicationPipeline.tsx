@@ -1,7 +1,9 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { PipelineApplication } from '@/lib/api/dashboard'
+import { InfoTooltip } from '@/components/ui/InfoTooltip'
 import { useDashboard } from './DashboardClient'
 
 interface ApplicationPipelineProps {
@@ -52,6 +54,10 @@ export const ApplicationPipeline: React.FC<ApplicationPipelineProps> = ({ applic
       <h2 className="text-xl font-semibold text-white flex items-center gap-2">
         <span>📊</span>
         Application Pipeline
+        <InfoTooltip
+          content="Track all your applications at a glance. Click 'Applications' in the sidebar for kanban and table views where you can drag-and-drop to update status!"
+          position="right"
+        />
       </h2>
 
       {/* Application Cards Grid */}
@@ -108,9 +114,30 @@ export const ApplicationPipeline: React.FC<ApplicationPipelineProps> = ({ applic
           })}
         </div>
       ) : (
-        <div className="bg-[#0A0E1A] border-2 border-[#1E293B] rounded-2xl p-8 text-center">
-          <div className="text-sm text-gray-500 italic">
-            No applications yet. Start tracking your job applications!
+        <div className="bg-[#0A0E1A] border-2 border-[#1E293B] rounded-2xl p-12 text-center">
+          <div className="mb-4">
+            <div className="text-6xl mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-white mb-2">No Applications Yet</h3>
+            <p className="text-gray-400 mb-6 max-w-md mx-auto">
+              Start tracking your job applications to see your progress here. Add your first application to unlock all Career Hub features!
+            </p>
+            <Link
+              href="/applications"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0D9488] text-white rounded-lg font-semibold hover:bg-[#0D9488]/90 transition-colors"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Add Your First Application
+            </Link>
           </div>
         </div>
       )}

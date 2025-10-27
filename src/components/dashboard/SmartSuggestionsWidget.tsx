@@ -174,7 +174,7 @@ export const SmartSuggestionsWidget: React.FC<SmartSuggestionsWidgetProps> = ({
 
           {/* Quick view button */}
           <button
-            onClick={() => router.push('/applications/kanban')}
+            onClick={() => router.push('/applications')}
             className="ml-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
             title="View application"
           >
@@ -237,7 +237,7 @@ export const SmartSuggestionsWidget: React.FC<SmartSuggestionsWidgetProps> = ({
             <span>All details auto-loaded</span>
           </div>
           <button
-            onClick={() => router.push('/applications/kanban')}
+            onClick={() => router.push('/applications')}
             className="text-sm text-white/60 hover:text-white transition-colors"
           >
             View all applications →

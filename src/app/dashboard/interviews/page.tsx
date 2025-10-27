@@ -4,19 +4,7 @@ import { useState, useEffect } from 'react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { AddInterviewModal } from '@/components/interviews/AddInterviewModal'
 import { EditInterviewModal } from '@/components/interviews/EditInterviewModal'
-
-interface Interview {
-  id: string
-  interview_date: string
-  interview_type: string
-  notes?: string
-  prepared: boolean
-  outcome?: string
-  application?: {
-    company_name: string
-    position_title: string
-  }
-}
+import { Interview } from '@/lib/api/interviews'
 
 export default function InterviewsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)

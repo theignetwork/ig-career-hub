@@ -4,10 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 // GET - Fetch single application
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const { data, error } = await supabaseAdmin
       .from('applications')
@@ -37,10 +37,10 @@ export async function GET(
 // PATCH - Update specific fields (used for status changes in kanban)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
     const { data, error } = await supabaseAdmin
@@ -68,10 +68,10 @@ export async function PATCH(
 // PUT - Full update (used for editing applications)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
     const { data, error } = await supabaseAdmin
@@ -109,10 +109,10 @@ export async function PUT(
 // DELETE - Remove application
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const { error } = await supabaseAdmin
       .from('applications')

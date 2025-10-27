@@ -314,6 +314,28 @@ export async function getFollowUpCompanies(userId: string): Promise<string[]> {
 }
 
 /**
+ * Get all applications for Smart Suggestions
+ * Returns full application data sorted by date (most recent first)
+ */
+export async function getApplicationsForSuggestions(userId: string): Promise<Application[]> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date_applied', { ascending: false })
+      .limit(20)
+
+    if (error) throw error
+
+    return (data as Application[]) || []
+  } catch (error) {
+    console.error('[getApplicationsForSuggestions] Error:', error)
+    return []
+  }
+}
+
+/**
  * Get a single application by ID
  * Returns complete application data for editing
  */

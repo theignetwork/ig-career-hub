@@ -13,6 +13,7 @@ import {
   getRecentApplications,
   getApplicationPipeline,
   getFollowUpCompanies,
+  getApplicationsForSuggestions,
 } from '@/lib/api/dashboard'
 
 // Server Component - Fetches real data from Supabase
@@ -24,13 +25,14 @@ export default async function DashboardPage() {
   const userId = 'demo-user-123'
 
   // Fetch all dashboard data in parallel
-  const [stats, upcomingInterviews, recentApplications, pipeline, followUpCompanies] =
+  const [stats, upcomingInterviews, recentApplications, pipeline, followUpCompanies, applications] =
     await Promise.all([
       getDashboardStats(userId),
       getUpcomingInterviews(userId),
       getRecentApplications(userId, 3),
       getApplicationPipeline(userId),
       getFollowUpCompanies(userId),
+      getApplicationsForSuggestions(userId),
     ])
 
   // Get next interview and this week's interviews
@@ -50,7 +52,7 @@ export default async function DashboardPage() {
           <JourneyOverview stats={stats} />
 
           {/* Section 1.5: Smart Suggestions - Status-based recommendations */}
-          <SmartSuggestionsWidget applications={pipeline} />
+          <SmartSuggestionsWidget applications={applications} />
 
         {/* Section 2: Three-Column Widget Grid */}
         <div className="grid grid-cols-3 gap-4">

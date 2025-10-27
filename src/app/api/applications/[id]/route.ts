@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
+// GET - Fetch single application
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
 
     const { data, error } = await supabaseAdmin
       .from('applications')
@@ -16,7 +17,11 @@ export async function GET(
 
     if (error) {
       console.error('[GET /api/applications/[id]] Error:', error)
-      return NextResponse.json({ error: error.message }, { status: 404 })
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 })
     }
 
     return NextResponse.json(data)
@@ -29,23 +34,18 @@ export async function GET(
   }
 }
 
+// PATCH - Update specific fields (used for status changes in kanban)
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const body = await request.json()
-
-    // PATCH allows partial updates - only update fields that are provided
-    const updateData = {
-      ...body,
-      updated_at: new Date().toISOString(),
-    }
 
     const { data, error } = await supabaseAdmin
       .from('applications')
-      .update(updateData)
+      .update(body)
       .eq('id', id)
       .select()
       .single()
@@ -65,12 +65,13 @@ export async function PATCH(
   }
 }
 
+// PUT - Full update (used for editing applications)
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const body = await request.json()
 
     const { data, error } = await supabaseAdmin
@@ -85,7 +86,6 @@ export async function PUT(
         remote_type: body.remote_type,
         status: body.status,
         notes: body.notes,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()
@@ -106,12 +106,13 @@ export async function PUT(
   }
 }
 
+// DELETE - Remove application
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
 
     const { error } = await supabaseAdmin
       .from('applications')

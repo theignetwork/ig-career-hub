@@ -7,6 +7,8 @@ const anthropic = new Anthropic({
 
 export async function POST(request: Request) {
   try {
+    console.log('[POST /api/applications/extract] Starting extraction...')
+
     // Debug: Check if API key is loaded
     if (!process.env.ANTHROPIC_API_KEY) {
       console.error('[POST /api/applications/extract] ANTHROPIC_API_KEY is not set!')
@@ -17,7 +19,10 @@ export async function POST(request: Request) {
     }
     console.log('[POST /api/applications/extract] API key loaded:', process.env.ANTHROPIC_API_KEY.substring(0, 15) + '...')
 
-    const { input } = await request.json()
+    const body = await request.json()
+    console.log('[POST /api/applications/extract] Request body:', body)
+
+    const { input } = body
 
     if (!input || !input.trim()) {
       return NextResponse.json(
@@ -54,6 +59,8 @@ export async function POST(request: Request) {
       }
     }
 
+    console.log('[POST /api/applications/extract] Calling Claude API...')
+
     // Use Claude to extract structured data
     const message = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
@@ -79,10 +86,14 @@ Return only the JSON object, no additional text.`,
       ],
     })
 
+    console.log('[POST /api/applications/extract] Claude API response received')
+
     // Extract JSON from Claude's response
     const responseText = message.content[0].type === 'text'
       ? message.content[0].text
       : ''
+
+    console.log('[POST /api/applications/extract] Claude response text:', responseText)
 
     // Parse the JSON response
     let extracted
@@ -94,8 +105,10 @@ Return only the JSON object, no additional text.`,
       } else {
         extracted = JSON.parse(responseText)
       }
+      console.log('[POST /api/applications/extract] Successfully parsed response:', extracted)
     } catch (parseError) {
-      console.error('Failed to parse Claude response:', responseText)
+      console.error('[POST /api/applications/extract] Failed to parse Claude response:', responseText)
+      console.error('[POST /api/applications/extract] Parse error:', parseError)
       throw new Error('Failed to parse AI response')
     }
 
@@ -110,11 +123,17 @@ Return only the JSON object, no additional text.`,
         : '',
     }
 
+    console.log('[POST /api/applications/extract] Returning cleaned data:', cleanedData)
     return NextResponse.json(cleanedData)
   } catch (error) {
     console.error('[POST /api/applications/extract] Error:', error)
+    console.error('[POST /api/applications/extract] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('[POST /api/applications/extract] Error message:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Failed to extract job details' },
+      {
+        error: 'Failed to extract job details',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }

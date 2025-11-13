@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Application } from '@/lib/api/applications'
+import { authenticatedDelete } from '@/lib/utils/authenticatedFetch'
 
 interface ApplicationsTableProps {
   applications: Application[]
@@ -25,9 +26,7 @@ export const ApplicationsTable: React.FC<ApplicationsTableProps> = ({ applicatio
 
     setDeletingId(selectedApp.id)
     try {
-      const response = await fetch(`/api/applications/${selectedApp.id}`, {
-        method: 'DELETE',
-      })
+      const response = await authenticatedDelete(`/api/applications/${selectedApp.id}`)
 
       if (!response.ok) throw new Error('Failed to delete application')
 

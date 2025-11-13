@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { AddInterviewModal } from '@/components/interviews/AddInterviewModal'
 import { EditInterviewModal } from '@/components/interviews/EditInterviewModal'
 import { Interview } from '@/lib/api/interviews'
+import { authenticatedFetch, authenticatedPatch, authenticatedDelete } from '@/lib/utils/authenticatedFetch'
 
 export default function InterviewsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -21,8 +22,8 @@ export default function InterviewsPage() {
     try {
       setLoading(true)
       const [upcomingRes, pastRes] = await Promise.all([
-        fetch('/api/interviews?upcoming=true'),
-        fetch('/api/interviews?upcoming=false&limit=10'),
+        authenticatedFetch('/api/interviews?upcoming=true'),
+        authenticatedFetch('/api/interviews?upcoming=false&limit=10'),
       ])
 
       const upcomingData = await upcomingRes.json()
@@ -43,11 +44,7 @@ export default function InterviewsPage() {
 
   const handleMarkPrepared = async (interviewId: string) => {
     try {
-      const response = await fetch('/api/interviews', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: interviewId, prepared: true }),
-      })
+      const response = await authenticatedPatch('/api/interviews', { id: interviewId, prepared: true })
 
       if (!response.ok) throw new Error('Failed to update interview')
 
@@ -62,9 +59,7 @@ export default function InterviewsPage() {
     if (!confirm('Are you sure you want to delete this interview?')) return
 
     try {
-      const response = await fetch(`/api/interviews?id=${interviewId}`, {
-        method: 'DELETE',
-      })
+      const response = await authenticatedDelete(`/api/interviews?id=${interviewId}`)
 
       if (!response.ok) throw new Error('Failed to delete interview')
 

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') // Filter by document type
@@ -39,8 +43,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const body = await request.json()
 
@@ -72,8 +79,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

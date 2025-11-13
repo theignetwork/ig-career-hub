@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { authenticatedFetch, authenticatedPost, authenticatedPut } from '@/lib/utils/authenticatedFetch'
 
 interface Application {
   id: string
@@ -99,7 +100,7 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
   // Fetch interview data for editing
   const fetchInterviewData = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/interviews?application_id=${applicationId}`)
+      const response = await authenticatedFetch(`/api/interviews?application_id=${applicationId}`)
       if (response.ok) {
         const data = await response.json()
         const interview = data.interviews?.[0]
@@ -133,11 +134,7 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
     try {
       // TODO: Implement AI extraction endpoint
       // For now, using a placeholder
-      const response = await fetch('/api/applications/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: jobInput }),
-      })
+      const response = await authenticatedPost('/api/applications/extract', { input: jobInput })
 
       if (!response.ok) throw new Error('Extraction failed')
 
@@ -158,14 +155,10 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
     setError(null)
 
     try {
-      const response = await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...extractedData,
-          job_description: jobInput,
-          status,
-        }),
+      const response = await authenticatedPost('/api/applications', {
+        ...extractedData,
+        job_description: jobInput,
+        status,
       })
 
       if (!response.ok) throw new Error('Failed to create application')
@@ -186,17 +179,10 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
     setError(null)
 
     try {
-      const url = isEditing ? `/api/applications/${editingApplication.id}` : '/api/applications'
-      const method = isEditing ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...manualData,
-          status,
-        }),
-      })
+      const url = `/api/applications${isEditing ? `/${editingApplication.id}` : ''}`
+      const response = isEditing
+        ? await authenticatedPut(url, { ...manualData, status })
+        : await authenticatedPost(url, { ...manualData, status })
 
       if (!response.ok) throw new Error(`Failed to ${isEditing ? 'update' : 'create'} application`)
 
@@ -210,7 +196,7 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
           : `${interviewDate}T09:00:00` // Default to 9 AM if no time specified
 
         // First, check if an interview already exists for this application
-        const existingInterviewsResponse = await fetch(`/api/interviews?application_id=${applicationId}`)
+        const existingInterviewsResponse = await authenticatedFetch(`/api/interviews?application_id=${applicationId}`)
         let existingInterview = null
 
         if (existingInterviewsResponse.ok) {
@@ -220,25 +206,17 @@ export const AddApplicationModal: React.FC<AddApplicationModalProps> = ({
 
         if (existingInterview) {
           // Update existing interview
-          await fetch(`/api/interviews/${existingInterview.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              interview_date: interviewDateTime,
-              interview_type: interviewType,
-            }),
+          await authenticatedPut(`/api/interviews/${existingInterview.id}`, {
+            interview_date: interviewDateTime,
+            interview_type: interviewType,
           })
         } else {
           // Create new interview
-          await fetch('/api/interviews', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              application_id: applicationId,
-              interview_date: interviewDateTime,
-              interview_type: interviewType,
-              prepared: false,
-            }),
+          await authenticatedPost('/api/interviews', {
+            application_id: applicationId,
+            interview_date: interviewDateTime,
+            interview_type: interviewType,
+            prepared: false,
           })
         }
       }

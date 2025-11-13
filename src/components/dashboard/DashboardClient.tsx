@@ -3,6 +3,7 @@
 import React, { useState, createContext, useContext } from 'react'
 import { useRouter } from 'next/navigation'
 import { AddApplicationModal } from '@/components/applications/AddApplicationModal'
+import { authenticatedFetch } from '@/lib/utils/authenticatedFetch'
 
 interface Application {
   id: string
@@ -44,7 +45,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ children }) =>
 
   const handleEdit = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/applications/${applicationId}`)
+      const response = await authenticatedFetch(`/api/applications/${applicationId}`)
       if (!response.ok) throw new Error('Failed to fetch application')
 
       const data = await response.json()

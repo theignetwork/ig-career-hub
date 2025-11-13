@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Application } from '@/lib/api/applications'
+import { authenticatedFetch, authenticatedPost } from '@/lib/utils/authenticatedFetch'
 
 interface AddInterviewModalProps {
   isOpen: boolean
@@ -40,7 +41,7 @@ export const AddInterviewModal: React.FC<AddInterviewModalProps> = ({
   const fetchApplications = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/applications?limit=100')
+      const response = await authenticatedFetch('/api/applications?limit=100')
       if (!response.ok) throw new Error('Failed to fetch applications')
       const data = await response.json()
       setApplications(data.applications || [])
@@ -73,16 +74,12 @@ export const AddInterviewModal: React.FC<AddInterviewModalProps> = ({
       // Combine date and time into ISO string
       const dateTime = new Date(`${formData.interview_date}T${formData.interview_time}`)
 
-      const response = await fetch('/api/interviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          application_id: formData.application_id,
-          interview_date: dateTime.toISOString(),
-          interview_type: formData.interview_type,
-          notes: formData.notes,
-          prepared: formData.prepared,
-        }),
+      const response = await authenticatedPost('/api/interviews', {
+        application_id: formData.application_id,
+        interview_date: dateTime.toISOString(),
+        interview_type: formData.interview_type,
+        notes: formData.notes,
+        prepared: formData.prepared,
       })
 
       if (!response.ok) throw new Error('Failed to schedule interview')

@@ -6,6 +6,7 @@ import { ApplicationFilters } from './ApplicationFilters'
 import { ApplicationsTable } from './ApplicationsTable'
 import { AddApplicationModal } from './AddApplicationModal'
 import type { Application } from '@/lib/api/applications'
+import { authenticatedFetch } from '@/lib/utils/authenticatedFetch'
 
 interface ApplicationsClientProps {
   initialApplications: Application[]
@@ -86,7 +87,7 @@ export const ApplicationsClient: React.FC<ApplicationsClientProps> = ({
 
   const handleEdit = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/applications/${applicationId}`)
+      const response = await authenticatedFetch(`/api/applications/${applicationId}`)
       if (!response.ok) throw new Error('Failed to fetch application')
 
       const data = await response.json()

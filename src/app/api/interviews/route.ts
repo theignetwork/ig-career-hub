@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function POST(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const body = await request.json()
     const { application_id, interview_date, interview_type, notes, prepared } = body
@@ -46,8 +50,11 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const upcoming = searchParams.get('upcoming')
@@ -100,8 +107,11 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const body = await request.json()
     const { id, ...updates } = body
@@ -146,8 +156,11 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

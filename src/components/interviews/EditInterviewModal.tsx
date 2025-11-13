@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { authenticatedPatch } from '@/lib/utils/authenticatedFetch'
 
 interface Interview {
   id: string
@@ -76,17 +77,13 @@ export const EditInterviewModal: React.FC<EditInterviewModalProps> = ({
       // Combine date and time into ISO string
       const dateTime = new Date(`${formData.interview_date}T${formData.interview_time}`)
 
-      const response = await fetch('/api/interviews', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: interview.id,
-          interview_date: dateTime.toISOString(),
-          interview_type: formData.interview_type,
-          notes: formData.notes,
-          prepared: formData.prepared,
-          outcome: formData.outcome || null,
-        }),
+      const response = await authenticatedPatch('/api/interviews', {
+        id: interview.id,
+        interview_date: dateTime.toISOString(),
+        interview_type: formData.interview_type,
+        notes: formData.notes,
+        prepared: formData.prepared,
+        outcome: formData.outcome || null,
       })
 
       if (!response.ok) throw new Error('Failed to update interview')

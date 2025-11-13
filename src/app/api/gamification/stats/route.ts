@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(request: Request) {
   try {
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Get profile with XP and level
     const { data: profile } = await supabaseAdmin

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function POST(request: Request) {
   try {
-    // TODO: Get user ID from session/auth
-    const userId = 'demo-user-123'
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const formData = await request.formData()
     const file = formData.get('file') as File

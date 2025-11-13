@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { SmartToolsSection } from './SmartToolsSection'
 import type { Application } from '@/lib/api/applications'
+import { authenticatedFetch } from '@/lib/utils/authenticatedFetch'
 
 interface Activity {
   id: string
@@ -45,8 +46,8 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
     try {
       setLoading(true)
       const [appResponse, activityResponse] = await Promise.all([
-        fetch(`/api/applications/${applicationId}`),
-        fetch(`/api/applications/${applicationId}/activities`),
+        authenticatedFetch(`/api/applications/${applicationId}`),
+        authenticatedFetch(`/api/applications/${applicationId}/activities`),
       ])
 
       if (appResponse.ok) {

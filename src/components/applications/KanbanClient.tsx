@@ -6,6 +6,7 @@ import { KanbanBoard } from './KanbanBoard'
 import { AddApplicationModal } from './AddApplicationModal'
 import { ApplicationDetailsModal } from './ApplicationDetailsModal'
 import type { Application } from '@/lib/api/applications'
+import { authenticatedFetch, authenticatedPatch, authenticatedDelete } from '@/lib/utils/authenticatedFetch'
 
 interface KanbanClientProps {
   initialApplications: Application[]
@@ -30,11 +31,7 @@ export const KanbanClient: React.FC<KanbanClientProps> = ({
     )
 
     try {
-      const response = await fetch(`/api/applications/${applicationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
+      const response = await authenticatedPatch(`/api/applications/${applicationId}`, { status: newStatus })
 
       if (!response.ok) throw new Error('Failed to update status')
 
@@ -50,7 +47,7 @@ export const KanbanClient: React.FC<KanbanClientProps> = ({
 
   const handleEdit = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/applications/${applicationId}`)
+      const response = await authenticatedFetch(`/api/applications/${applicationId}`)
       if (!response.ok) throw new Error('Failed to fetch application')
 
       const data = await response.json()
@@ -77,9 +74,7 @@ export const KanbanClient: React.FC<KanbanClientProps> = ({
 
   const handleDelete = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/applications/${applicationId}`, {
-        method: 'DELETE',
-      })
+      const response = await authenticatedDelete(`/api/applications/${applicationId}`)
 
       if (!response.ok) throw new Error('Failed to delete application')
 
@@ -93,7 +88,7 @@ export const KanbanClient: React.FC<KanbanClientProps> = ({
 
   const handleDuplicate = async (applicationId: string) => {
     try {
-      const response = await fetch(`/api/applications/${applicationId}`)
+      const response = await authenticatedFetch(`/api/applications/${applicationId}`)
       if (!response.ok) throw new Error('Failed to fetch application')
 
       const data = await response.json()

@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(request: Request) {
   try {
-    // For now, using demo user ID
-    const userId = 'demo-user-123'
+    // Get user ID from request headers
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '100')
@@ -33,9 +38,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
-    // For now, using demo user ID
-    // TODO: Replace with real authentication
-    const userId = 'demo-user-123'
+    // Get user ID from request headers
+    const userId = await getServerUserId()
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const { data, error } = await supabaseAdmin
       .from('applications')

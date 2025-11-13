@@ -5,6 +5,7 @@ import { XPBar } from '@/components/gamification/XPBar'
 import { AchievementCard } from '@/components/gamification/AchievementCard'
 import { StreakCounter } from '@/components/gamification/StreakCounter'
 import { ACHIEVEMENTS } from '@/lib/gamification/achievements'
+import { authenticatedFetch } from '@/lib/utils/authenticatedFetch'
 
 interface GamificationStats {
   xp: number
@@ -32,7 +33,7 @@ export const GoalsClient: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/gamification/stats')
+      const response = await authenticatedFetch('/api/gamification/stats')
       const data = await response.json()
       setStats(data)
     } catch (error) {

@@ -1,12 +1,9 @@
 // Helper function to award XP from client-side
+import { authenticatedPost } from '@/lib/utils/authenticatedFetch'
 
 export async function awardXP(xp: number, activityType: string, description?: string) {
   try {
-    const response = await fetch('/api/gamification/award-xp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ xp, activityType, description }),
-    })
+    const response = await authenticatedPost('/api/gamification/award-xp', { xp, activityType, description })
 
     if (!response.ok) {
       throw new Error('Failed to award XP')

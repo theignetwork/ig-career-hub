@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { authenticatedPost } from '@/lib/utils/authenticatedFetch'
 
 export const AddApplicationForm: React.FC = () => {
   const router = useRouter()
@@ -16,21 +17,15 @@ export const AddApplicationForm: React.FC = () => {
     const formData = new FormData(e.currentTarget)
 
     try {
-      const response = await fetch('/api/applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          company_name: formData.get('company_name'),
-          position_title: formData.get('position_title'),
-          job_url: formData.get('job_url'),
-          location: formData.get('location'),
-          salary_range: formData.get('salary_range'),
-          remote_type: formData.get('remote_type'),
-          status: formData.get('status') || 'applied',
-          notes: formData.get('notes'),
-        }),
+      const response = await authenticatedPost('/api/applications', {
+        company_name: formData.get('company_name'),
+        position_title: formData.get('position_title'),
+        job_url: formData.get('job_url'),
+        location: formData.get('location'),
+        salary_range: formData.get('salary_range'),
+        remote_type: formData.get('remote_type'),
+        status: formData.get('status') || 'applied',
+        notes: formData.get('notes'),
       })
 
       if (!response.ok) {

@@ -1,36 +1,59 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { ApplicationsClient } from '@/components/applications/ApplicationsClient'
 import { getApplications } from '@/lib/api/applications'
+import { getUserId } from '@/lib/utils/getUserId'
 
-interface PageProps {
-  searchParams: Promise<{
-    search?: string
-    status?: string
-    remoteType?: string
-    sortBy?: string
-    sortOrder?: 'asc' | 'desc'
-  }>
-}
+export default function ApplicationsTablePage() {
+  const searchParams = useSearchParams()
+  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
 
-export default async function ApplicationsTablePage({ searchParams }: PageProps) {
-  // TODO: Implement proper server-side auth
-  // For now using demo user ID - will be replaced with:
-  // - WordPress user ID from cookies/headers when embedded
-  // - Session-based auth for standalone mode
-  const userId = 'demo-user-123'
+  useEffect(() => {
+    const fetchData = async () => {
+      const userId = getUserId()
 
-  // Await searchParams in Next.js 15
-  const params = await searchParams
+      if (!userId) {
+        console.error('[ApplicationsTable] No user ID available')
+        setLoading(false)
+        return
+      }
 
-  // Fetch applications with filters from URL params
-  const { applications, total } = await getApplications(userId, {
-    search: params.search,
-    status: params.status,
-    remoteType: params.remoteType,
-    sortBy: (params.sortBy as any) || 'date_applied',
-    sortOrder: params.sortOrder || 'desc',
-    limit: 50,
-  })
+      try {
+        // Fetch applications with filters from URL params
+        const { applications: apps, total: count } = await getApplications(userId, {
+          search: searchParams.get('search') || undefined,
+          status: searchParams.get('status') || undefined,
+          remoteType: searchParams.get('remoteType') || undefined,
+          sortBy: (searchParams.get('sortBy') as any) || 'date_applied',
+          sortOrder: (searchParams.get('sortOrder') as any) || 'desc',
+          limit: 50,
+        })
+        setApplications(apps)
+        setTotal(count)
+      } catch (error) {
+        console.error('[ApplicationsTable] Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [searchParams])
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading applications...</div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>

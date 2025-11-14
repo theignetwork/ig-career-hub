@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
 import { JourneyOverview } from '@/components/dashboard/JourneyOverview'
@@ -8,6 +11,7 @@ import { ApplicationPipeline } from '@/components/dashboard/ApplicationPipeline'
 import { ToolkitGrid } from '@/components/dashboard/ToolkitGrid'
 import { SmartSuggestionsWidget } from '@/components/dashboard/SmartSuggestionsWidget'
 import { WelcomeBanner } from '@/components/ui/WelcomeBanner'
+import { getUserId } from '@/lib/utils/getUserId'
 import {
   getDashboardStats,
   getUpcomingInterviews,
@@ -17,33 +21,79 @@ import {
   getApplicationsForSuggestions,
 } from '@/lib/api/dashboard'
 
-// Server Component - Fetches real data from Supabase
-export default async function DashboardPage() {
-  // TODO: Implement proper server-side auth
-  // For now using demo user ID - will be replaced with:
-  // - WordPress user ID from cookies/headers when embedded
-  // - Session-based auth for standalone mode
-  const userId = 'demo-user-123'
+// Client Component - Fetches data with authenticated user ID
+export default function DashboardPage() {
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<any>(null)
 
-  // Fetch all dashboard data in parallel
-  const [stats, upcomingInterviews, recentApplications, pipeline, followUpCompanies, applications] =
-    await Promise.all([
-      getDashboardStats(userId),
-      getUpcomingInterviews(userId),
-      getRecentApplications(userId, 3),
-      getApplicationPipeline(userId),
-      getFollowUpCompanies(userId),
-      getApplicationsForSuggestions(userId),
-    ])
+  useEffect(() => {
+    const fetchData = async () => {
+      const userId = getUserId()
 
-  // Get next interview and this week's interviews
-  const nextInterview = upcomingInterviews[0] || null
-  const thisWeekInterviews = upcomingInterviews.filter((interview) => {
-    const interviewDate = new Date(interview.date)
-    const today = new Date()
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-    return interviewDate >= today && interviewDate <= weekFromNow
-  })
+      if (!userId) {
+        console.error('[Dashboard] No user ID available')
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Fetch all dashboard data in parallel
+        const [stats, upcomingInterviews, recentApplications, pipeline, followUpCompanies, applications] =
+          await Promise.all([
+            getDashboardStats(userId),
+            getUpcomingInterviews(userId),
+            getRecentApplications(userId, 3),
+            getApplicationPipeline(userId),
+            getFollowUpCompanies(userId),
+            getApplicationsForSuggestions(userId),
+          ])
+
+        // Get next interview and this week's interviews
+        const nextInterview = upcomingInterviews[0] || null
+        const thisWeekInterviews = upcomingInterviews.filter((interview) => {
+          const interviewDate = new Date(interview.date)
+          const today = new Date()
+          const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+          return interviewDate >= today && interviewDate <= weekFromNow
+        })
+
+        setData({
+          stats,
+          nextInterview,
+          thisWeekInterviews,
+          pipeline,
+          followUpCompanies,
+          applications
+        })
+      } catch (error) {
+        console.error('[Dashboard] Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Loading dashboard...</div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Unable to load dashboard data</div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
@@ -53,23 +103,23 @@ export default async function DashboardPage() {
           <WelcomeBanner />
 
           {/* Section 1: Your Journey at a Glance */}
-          <JourneyOverview stats={stats} />
+          <JourneyOverview stats={data.stats} />
 
           {/* Section 1.5: Smart Suggestions - Status-based recommendations */}
-          <SmartSuggestionsWidget applications={applications} />
+          <SmartSuggestionsWidget applications={data.applications} />
 
         {/* Section 2: Three-Column Widget Grid */}
         <div className="grid grid-cols-3 gap-4">
           <PriorityWidget
-            nextInterview={nextInterview}
-            followUpCompanies={followUpCompanies}
+            nextInterview={data.nextInterview}
+            followUpCompanies={data.followUpCompanies}
           />
-          <ThisWeekWidget interviews={thisWeekInterviews} />
+          <ThisWeekWidget interviews={data.thisWeekInterviews} />
           <QuickActionsWidget />
         </div>
 
         {/* Section 3: Application Pipeline */}
-        <ApplicationPipeline applications={pipeline} />
+        <ApplicationPipeline applications={data.pipeline} />
 
         {/* Section 4: Your Toolkit */}
         <ToolkitGrid />

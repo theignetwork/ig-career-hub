@@ -49,10 +49,10 @@ export function decodeContext(encoded: string): ToolContext | null {
 
 /**
  * Build tool URL with context parameter
- * Sends the JWT token directly in the 'context' parameter
+ * Sends the JWT token directly in the 'context' parameter using hash fragment
+ * Hash fragments support much larger data (32KB) vs query params (2KB)
  */
 export function buildToolUrl(baseUrl: string, context: ToolContext): string {
-  // Send JWT token directly (it already contains all application data)
-  const separator = baseUrl.includes('?') ? '&' : '?'
-  return `${baseUrl}${separator}context=${context.token}`
+  // Send JWT token in hash fragment to support long job descriptions
+  return `${baseUrl}#context=${context.token}`
 }

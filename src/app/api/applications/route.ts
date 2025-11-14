@@ -56,15 +56,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    console.log('[POST /api/applications] Request received')
     const body = await request.json()
+    console.log('[POST /api/applications] Body parsed:', Object.keys(body))
 
     // Get user ID from request headers
     const userId = await getServerUserId()
+    console.log('[POST /api/applications] User ID:', userId ? 'present' : 'MISSING')
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.error('[POST /api/applications] Unauthorized - no user ID')
+      return NextResponse.json({ error: 'Unauthorized - no user ID provided' }, { status: 401 })
     }
 
+    console.log('[POST /api/applications] Inserting application for user:', userId)
     const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .insert({
@@ -84,9 +89,11 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('[POST /api/applications] Error:', error)
+      console.error('[POST /api/applications] Supabase error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    console.log('[POST /api/applications] Application created successfully:', data.id)
 
     // Revalidate dashboard and applications pages
     revalidatePath('/dashboard')
@@ -94,9 +101,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error('[POST /api/applications] Error:', error)
+    console.error('[POST /api/applications] Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to create application' },
+      { error: 'Failed to create application', details: errorMessage },
       { status: 500 }
     )
   }

@@ -69,8 +69,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized - no user ID provided' }, { status: 401 })
     }
 
+    // Ensure user profile exists (auto-create for anonymous users)
+    const supabase = getSupabaseAdmin()
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (!existingProfile) {
+      console.log('[POST /api/applications] Creating profile for new user:', userId)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: null, // Anonymous user - no email yet
+          full_name: 'Anonymous User',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+
+      if (profileError) {
+        console.error('[POST /api/applications] Failed to create profile:', profileError)
+        // Continue anyway - the profile might have been created by another request
+      } else {
+        console.log('[POST /api/applications] Profile created successfully')
+      }
+    }
+
     console.log('[POST /api/applications] Inserting application for user:', userId)
-    const { data, error } = await getSupabaseAdmin()
+    const { data, error } = await supabase
       .from('applications')
       .insert({
         user_id: userId,

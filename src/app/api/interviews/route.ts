@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { application_id, interview_date, interview_type, notes, prepared } = body
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .insert({
         user_id: userId,
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     const type = searchParams.get('type')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from('interviews')
       .select(
         `
@@ -126,7 +126,7 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .update(updatedData)
       .eq('id', id)
@@ -169,7 +169,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Interview ID is required' }, { status: 400 })
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('interviews')
       .delete()
       .eq('id', id)

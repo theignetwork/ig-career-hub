@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 
 // ===========================
 // TypeScript Types
@@ -67,7 +67,7 @@ export async function getInterviews(
     } = filters
 
     // Build query with application join
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from('interviews')
       .select(
         `
@@ -114,7 +114,7 @@ export async function getInterviews(
  */
 export async function getInterviewById(interviewId: string): Promise<Interview | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .select(
         `
@@ -145,7 +145,7 @@ export async function createInterview(
   input: CreateInterviewInput
 ): Promise<Interview | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .insert({
         user_id: userId,
@@ -195,7 +195,7 @@ export async function updateInterview(
     if (input.prepared !== undefined) updateData.prepared = input.prepared
     if (input.outcome !== undefined) updateData.outcome = input.outcome
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .update(updateData)
       .eq('id', interviewId)
@@ -224,7 +224,7 @@ export async function updateInterview(
  */
 export async function deleteInterview(interviewId: string): Promise<boolean> {
   try {
-    const { error } = await supabaseAdmin.from('interviews').delete().eq('id', interviewId)
+    const { error } = await getSupabaseAdmin().from('interviews').delete().eq('id', interviewId)
 
     if (error) throw error
 
@@ -243,7 +243,7 @@ export async function toggleInterviewPrepared(
   prepared: boolean
 ): Promise<boolean> {
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('interviews')
       .update({
         prepared,
@@ -267,7 +267,7 @@ export async function getUpcomingInterviewsCount(userId: string): Promise<number
   try {
     const now = new Date().toISOString()
 
-    const { count, error } = await supabaseAdmin
+    const { count, error } = await getSupabaseAdmin()
       .from('interviews')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)

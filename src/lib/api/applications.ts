@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 
 // ===========================
 // TypeScript Types
@@ -67,7 +67,7 @@ export async function getApplications(
     } = filters
 
     // Build query
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from('applications')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
@@ -128,7 +128,7 @@ export async function getApplications(
  */
 export async function getApplicationById(applicationId: string): Promise<Application | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('*')
       .eq('id', applicationId)
@@ -148,7 +148,7 @@ export async function getApplicationById(applicationId: string): Promise<Applica
  */
 export async function deleteApplication(applicationId: string): Promise<boolean> {
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('applications')
       .delete()
       .eq('id', applicationId)
@@ -170,7 +170,7 @@ export async function updateApplicationStatus(
   status: Application['status']
 ): Promise<Application | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .update({
         status,
@@ -194,7 +194,7 @@ export async function updateApplicationStatus(
  */
 export async function getApplicationStats(userId: string) {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('status')
       .eq('user_id', userId)

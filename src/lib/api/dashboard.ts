@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import type { Application } from './applications'
 
 // ===========================
@@ -49,8 +49,10 @@ export interface PipelineApplication {
  */
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {
   try {
+    const supabase = getSupabaseAdmin()
+
     // Get applications count
-    const { count: applicationsCount, error: appsError } = await supabaseAdmin
+    const { count: applicationsCount, error: appsError } = await supabase
       .from('applications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -58,7 +60,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     if (appsError) throw appsError
 
     // Get interviews count
-    const { count: interviewsCount, error: interviewsError } = await supabaseAdmin
+    const { count: interviewsCount, error: interviewsError } = await supabase
       .from('interviews')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -66,7 +68,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     if (interviewsError) throw interviewsError
 
     // Get offers count
-    const { count: offersCount, error: offersError } = await supabaseAdmin
+    const { count: offersCount, error: offersError } = await supabase
       .from('applications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -106,7 +108,7 @@ export async function calculateResponseRate(userId: string): Promise<{
 }> {
   try {
     // Try to use application_stats view first
-    const { data: statsData, error: statsError } = await supabaseAdmin
+    const { data: statsData, error: statsError } = await getSupabaseAdmin()
       .from('application_stats')
       .select('total_applications, responded_applications')
       .eq('user_id', userId)
@@ -126,7 +128,7 @@ export async function calculateResponseRate(userId: string): Promise<{
     }
 
     // Fallback: Calculate manually
-    const { data: applications, error: appsError } = await supabaseAdmin
+    const { data: applications, error: appsError } = await getSupabaseAdmin()
       .from('applications')
       .select('id, status')
       .eq('user_id', userId)
@@ -157,7 +159,7 @@ export async function calculateResponseRate(userId: string): Promise<{
  */
 export async function getUpcomingInterviews(userId: string): Promise<UpcomingInterview[]> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('interviews')
       .select(
         `
@@ -211,7 +213,7 @@ export async function getRecentApplications(
   limit: number = 10
 ): Promise<RecentApplication[]> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('id, company_name, position_title, status, date_applied')
       .eq('user_id', userId)
@@ -246,7 +248,7 @@ export async function getApplicationPipeline(userId: string): Promise<PipelineAp
     const pipeline: PipelineApplication[] = []
 
     for (const stage of stages) {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await getSupabaseAdmin()
         .from('applications')
         .select('id, company_name, position_title, status, date_applied')
         .eq('user_id', userId)
@@ -282,7 +284,7 @@ export async function getFollowUpCompanies(userId: string): Promise<string[]> {
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('company_name')
       .eq('user_id', userId)
@@ -306,7 +308,7 @@ export async function getFollowUpCompanies(userId: string): Promise<string[]> {
  */
 export async function getApplicationsForSuggestions(userId: string): Promise<Application[]> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('*')
       .eq('user_id', userId)
@@ -328,7 +330,7 @@ export async function getApplicationsForSuggestions(userId: string): Promise<App
  */
 export async function getApplicationById(applicationId: string): Promise<Application | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('applications')
       .select('*')
       .eq('id', applicationId)

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function POST(request: Request) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     // Get current user XP
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from('profiles')
       .select('total_xp, current_level')
       .eq('id', userId)
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const newXP = oldXP + xp
 
     // Update user XP
-    const { data: updatedProfile, error: updateError } = await supabaseAdmin
+    const { data: updatedProfile, error: updateError } = await getSupabaseAdmin()
       .from('profiles')
       .update({ total_xp: newXP })
       .eq('id', userId)
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Log the XP activity
-    await supabaseAdmin.from('xp_activities').insert({
+    await getSupabaseAdmin().from('xp_activities').insert({
       user_id: userId,
       activity_type: activityType || 'unknown',
       xp_earned: xp,

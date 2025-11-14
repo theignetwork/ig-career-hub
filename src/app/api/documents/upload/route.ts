@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function POST(request: Request) {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const { data: uploadData, error: uploadError } = await getSupabaseAdmin().storage
       .from('documents')
       .upload(fileName, buffer, {
         contentType: file.type,
@@ -44,10 +44,10 @@ export async function POST(request: Request) {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabaseAdmin.storage.from('documents').getPublicUrl(fileName)
+    } = getSupabaseAdmin().storage.from('documents').getPublicUrl(fileName)
 
     // Create document record in database
-    const { data: document, error: dbError } = await supabaseAdmin
+    const { data: document, error: dbError } = await getSupabaseAdmin()
       .from('documents')
       .insert({
         user_id: userId,
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (dbError) {
       console.error('[POST /api/documents/upload] DB Error:', dbError)
       // Try to clean up uploaded file
-      await supabaseAdmin.storage.from('documents').remove([fileName])
+      await getSupabaseAdmin().storage.from('documents').remove([fileName])
       return NextResponse.json({ error: dbError.message }, { status: 500 })
     }
 

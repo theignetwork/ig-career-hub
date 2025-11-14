@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(request: Request) {
@@ -11,28 +11,28 @@ export async function GET(request: Request) {
     }
 
     // Get profile with XP and level
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from('profiles')
       .select('total_xp, current_level')
       .eq('id', userId)
       .single()
 
     // Get achievements
-    const { data: achievements } = await supabaseAdmin
+    const { data: achievements } = await getSupabaseAdmin()
       .from('achievements')
       .select('*')
       .eq('user_id', userId)
       .order('earned_at', { ascending: false })
 
     // Get streaks
-    const { data: streaks } = await supabaseAdmin
+    const { data: streaks } = await getSupabaseAdmin()
       .from('streaks')
       .select('*')
       .eq('user_id', userId)
       .single()
 
     // Get recent XP activities
-    const { data: recentXP } = await supabaseAdmin
+    const { data: recentXP } = await getSupabaseAdmin()
       .from('xp_activities')
       .select('*')
       .eq('user_id', userId)

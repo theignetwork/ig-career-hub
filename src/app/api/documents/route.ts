@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') // Filter by document type
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from('documents')
       .select('*')
       .eq('user_id', userId)
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('documents')
       .insert({
         user_id: userId,
@@ -93,7 +93,7 @@ export async function DELETE(request: Request) {
     }
 
     // Delete from database
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('documents')
       .delete()
       .eq('id', id)

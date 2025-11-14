@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/server'
 import { getServerUserId } from '@/lib/utils/getServerUserId'
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
     }
 
     // First verify the user owns this application
-    const { data: application } = await supabaseAdmin
+    const { data: application } = await getSupabaseAdmin()
       .from('applications')
       .select('user_id')
       .eq('id', id)
@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 })
     }
 
-    const { data: activities, error } = await supabaseAdmin
+    const { data: activities, error } = await getSupabaseAdmin()
       .from('application_activities')
       .select('*')
       .eq('application_id', id)

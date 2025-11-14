@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { KanbanClient } from '@/components/applications/KanbanClient'
-import { getApplications } from '@/lib/api/applications'
 import { getUserId } from '@/lib/utils/getUserId'
 
 export default function ApplicationsPage() {
@@ -22,10 +21,18 @@ export default function ApplicationsPage() {
       }
 
       try {
-        // Fetch all applications (no pagination for kanban view)
-        const data = await getApplications(userId, {
-          limit: 200, // Get more applications for kanban view
+        // Fetch all applications via API route
+        const response = await fetch('/api/applications?limit=200', {
+          headers: {
+            'x-user-id': userId,
+          },
         })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch applications')
+        }
+
+        const data = await response.json()
         setApplications(data.applications)
         setTotal(data.total)
       } catch (error) {

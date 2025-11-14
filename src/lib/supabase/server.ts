@@ -32,12 +32,3 @@ export const getSupabaseAdmin = (): SupabaseClient => {
   return supabaseAdminInstance
 }
 
-/**
- * Legacy export for backward compatibility
- * @deprecated Use getSupabaseAdmin() instead for safer initialization
- */
-export const supabaseAdmin = new Proxy({} as SupabaseClient, {
-  get(target, prop) {
-    return getSupabaseAdmin()[prop as keyof SupabaseClient]
-  }
-})

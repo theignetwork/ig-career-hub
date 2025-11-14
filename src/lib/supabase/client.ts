@@ -31,12 +31,3 @@ export const getSupabaseClient = (): SupabaseClient => {
   return supabaseInstance
 }
 
-/**
- * Legacy export for backward compatibility
- * @deprecated Use getSupabaseClient() instead for safer initialization
- */
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(target, prop) {
-    return getSupabaseClient()[prop as keyof SupabaseClient]
-  }
-})

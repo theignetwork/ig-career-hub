@@ -14,13 +14,33 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '100')
+    const search = searchParams.get('search')
+    const status = searchParams.get('status')
+    const remoteType = searchParams.get('remoteType')
+    const sortBy = searchParams.get('sortBy') || 'date_applied'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
 
-    const { data, error } = await getSupabaseAdmin()
+    // Build query
+    let query = getSupabaseAdmin()
       .from('applications')
       .select('*')
       .eq('user_id', userId)
-      .order('date_applied', { ascending: false })
-      .limit(limit)
+
+    // Apply filters
+    if (search) {
+      query = query.or(`company_name.ilike.%${search}%,position_title.ilike.%${search}%`)
+    }
+    if (status && status !== 'all') {
+      query = query.eq('status', status)
+    }
+    if (remoteType && remoteType !== 'all') {
+      query = query.eq('remote_type', remoteType)
+    }
+
+    // Apply sorting and limit
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' }).limit(limit)
+
+    const { data, error } = await query
 
     if (error) {
       console.error('[GET /api/applications] Error:', error)

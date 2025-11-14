@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { DocumentCard } from './DocumentCard'
 import { UploadDocumentModal } from './UploadDocumentModal'
+import { getUserId } from '@/lib/utils/getUserId'
 
 interface Document {
   id: string
@@ -27,11 +28,23 @@ export const DocumentsClient: React.FC = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true)
+      const userId = getUserId()
+
+      if (!userId) {
+        console.error('[DocumentsClient] No user ID available')
+        setLoading(false)
+        return
+      }
+
       const url = filter === 'all'
         ? '/api/documents'
         : `/api/documents?type=${filter}`
 
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        headers: {
+          'x-user-id': userId,
+        },
+      })
       const data = await response.json()
 
       if (response.ok) {
@@ -54,8 +67,18 @@ export const DocumentsClient: React.FC = () => {
     if (!confirm('Are you sure you want to delete this document?')) return
 
     try {
+      const userId = getUserId()
+
+      if (!userId) {
+        console.error('[DocumentsClient] No user ID available')
+        return
+      }
+
       const response = await fetch(`/api/documents?id=${id}`, {
         method: 'DELETE',
+        headers: {
+          'x-user-id': userId,
+        },
       })
 
       if (!response.ok) {

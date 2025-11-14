@@ -14,8 +14,11 @@ export default function DebugAuthPage() {
     const id = getUserId()
     setUserId(id)
     console.log('[DEBUG] User ID:', id)
-    console.log('[DEBUG] window.wpUserId:', (window as any).wpUserId)
-    console.log('[DEBUG] localStorage ig_user_id:', localStorage.getItem('ig_user_id'))
+
+    if (typeof window !== 'undefined') {
+      console.log('[DEBUG] window.wpUserId:', (window as any).wpUserId)
+      console.log('[DEBUG] localStorage ig_user_id:', localStorage.getItem('ig_user_id'))
+    }
   }, [])
 
   const testAuthenticatedRequest = async () => {
@@ -63,14 +66,18 @@ export default function DebugAuthPage() {
   }
 
   const clearUserId = () => {
-    localStorage.removeItem('ig_user_id')
-    window.location.reload()
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('ig_user_id')
+      window.location.reload()
+    }
   }
 
   const setTestUserId = () => {
-    const testId = `test-user-${Date.now()}`
-    localStorage.setItem('ig_user_id', testId)
-    window.location.reload()
+    if (typeof window !== 'undefined') {
+      const testId = `test-user-${Date.now()}`
+      localStorage.setItem('ig_user_id', testId)
+      window.location.reload()
+    }
   }
 
   return (
@@ -86,10 +93,10 @@ export default function DebugAuthPage() {
               User ID: <span className="text-teal-400">{userId || 'NULL/EMPTY'}</span>
             </p>
             <p className="text-sm text-gray-400">
-              window.wpUserId: {JSON.stringify((window as any).wpUserId || null)}
+              window.wpUserId: {typeof window !== 'undefined' ? JSON.stringify((window as any).wpUserId || null) : 'N/A'}
             </p>
             <p className="text-sm text-gray-400">
-              localStorage: {JSON.stringify(localStorage.getItem('ig_user_id') || null)}
+              localStorage: {typeof window !== 'undefined' ? JSON.stringify(localStorage.getItem('ig_user_id') || null) : 'N/A'}
             </p>
           </div>
 

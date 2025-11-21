@@ -2,9 +2,9 @@
  * Context builder - creates ToolContext from application data
  */
 
+import { generateContextToken } from './token'
 import type { ToolContext } from './types'
 import type { Application } from '@/lib/api/applications'
-import { authenticatedPost } from '@/lib/utils/authenticatedFetch'
 
 /**
  * Build a complete ToolContext from an application
@@ -15,17 +15,22 @@ export async function buildToolContext(
   application: Application,
   userId: string
 ): Promise<ToolContext> {
-  // Call server API to generate token (keeps secret server-side!)
-  const response = await authenticatedPost('/api/context/generate', {
-    applicationId: application.id
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to generate context token')
+  // Prepare application data for JWT
+  const applicationData = {
+    companyName: application.company_name,
+    positionTitle: application.position_title,
+    jobDescription: application.job_description,
+    location: application.location,
+    salaryRange: application.salary_range,
+    remoteType: application.remote_type,
+    source: application.source,
+    dateApplied: application.date_applied,
   }
 
-  const { token, expiresAt } = await response.json()
+  // Generate JWT token with full application data (15 min expiration)
+  const token = await generateContextToken(userId, application.id, applicationData, 15)
+
+  const expiresAt = Date.now() + (15 * 60 * 1000) // 15 minutes
 
   const context: ToolContext = {
     source: 'career-hub',
@@ -37,7 +42,7 @@ export async function buildToolContext(
     positionTitle: application.position_title,
     token,
     expiresAt,
-    careerHubUrl: process.env.NEXT_PUBLIC_CAREER_HUB_URL || (typeof window !== 'undefined' ? window.location.origin : ''),
+    careerHubUrl: process.env.NEXT_PUBLIC_CAREER_HUB_URL || window.location.origin,
   }
 
   return context

@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase/server'
-import { verifyContextToken } from '@/lib/context/token'
+import { verifyContextToken } from '@/lib/context/token-server'
 import type { ApplicationContextData } from '@/lib/context/types'
 
 export async function GET(

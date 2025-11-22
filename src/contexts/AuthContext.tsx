@@ -80,22 +80,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setWpUserId(null);
         }
       } else {
-        // Check if user data already in sessionStorage (from previous page load)
+        // NO TOKEN in URL - Check if we have a stored auth token to re-verify
+        const storedToken = sessionStorage.getItem('auth_token');
         const storedUserId = sessionStorage.getItem('wp_user_id');
         const storedUserData = sessionStorage.getItem('user_data');
 
-        if (storedUserId && storedUserData) {
+        if (storedToken && storedUserId && storedUserData) {
           try {
-            const userData = JSON.parse(storedUserData);
-            setUser(userData);
-            setWpUserId(parseInt(storedUserId));
-            console.log('[Auth] Using stored WordPress user ID:', storedUserId);
+            console.log('[Auth] No token in URL, but found stored token - re-verifying...');
+
+            // RE-VERIFY the stored token to prevent user ID bleeding
+            const response = await fetch('/api/auth/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: storedToken })
+            });
+
+            if (!response.ok) {
+              throw new Error('Stored token verification failed');
+            }
+
+            const { user: userData } = await response.json();
+
+            // CRITICAL: Check if the verified user ID matches the stored one
+            if (userData.user_id.toString() !== storedUserId) {
+              console.error('[Auth] 🚨 USER ID MISMATCH! Stored:', storedUserId, 'Verified:', userData.user_id);
+              console.error('[Auth] 🚨 SECURITY: Clearing stale session data to prevent data bleeding');
+
+              // Clear old user's data
+              sessionStorage.removeItem('auth_token');
+              sessionStorage.removeItem('wp_user_id');
+              sessionStorage.removeItem('user_data');
+
+              setUser(null);
+              setWpUserId(null);
+
+              console.log('[Auth] Please refresh the page to re-authenticate');
+            } else {
+              // Token is valid and user ID matches
+              setUser(userData as UserData);
+              setWpUserId(userData.user_id);
+              console.log('[Auth] Re-verified stored WordPress user ID:', userData.user_id);
+            }
           } catch (err) {
-            console.error('[Auth] Failed to parse stored user data:', err);
+            console.error('[Auth] Failed to re-verify stored token:', err);
+            // Clear invalid/expired stored data
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('wp_user_id');
             sessionStorage.removeItem('user_data');
+            setUser(null);
+            setWpUserId(null);
           }
         } else {
-          console.log('[Auth] No token or stored user ID found - using anonymous mode');
+          console.log('[Auth] No token or stored auth data found - using anonymous mode');
         }
       }
 

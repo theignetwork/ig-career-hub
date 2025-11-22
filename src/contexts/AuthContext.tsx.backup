@@ -48,8 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           console.log('[Auth] Token received, verifying with server...');
 
-          // CRITICAL: Check for old user data BEFORE overwriting
-          const oldUserId = sessionStorage.getItem('wp_user_id');
+          // Store token for future API calls
+          sessionStorage.setItem('auth_token', token);
 
           // Verify token with server (server has the secret, not client!)
           const response = await fetch('/api/auth/verify', {
@@ -63,19 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
 
           const { user: userData } = await response.json();
-
-          // Check if switching from a DIFFERENT user (account switcher scenario)
-          if (oldUserId && oldUserId !== userData.user_id.toString()) {
-            console.log('[Auth] 🔄 User change detected! Old:', oldUserId, '→ New:', userData.user_id);
-            console.log('[Auth] Clearing old session data and reloading with new JWT...');
-            sessionStorage.clear();
-            // Reload page - JWT is still in URL, so it will load with correct user
-            window.location.reload();
-            return; // Stop execution here
-          }
-
-          // No user change - proceed normally
-          sessionStorage.setItem('auth_token', token);
           setUser(userData as UserData);
           setWpUserId(userData.user_id);
 

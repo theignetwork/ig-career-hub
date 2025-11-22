@@ -123,7 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(null);
               setWpUserId(null);
 
-              console.log('[Auth] Please refresh the page to re-authenticate');
+              console.log('[Auth] Auto-refreshing to load correct user data...');
+
+              // Auto-refresh to load the correct user's data
+              window.location.reload();
             } else {
               // Token is valid and user ID matches
               setUser(userData as UserData);

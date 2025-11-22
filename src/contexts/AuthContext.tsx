@@ -34,6 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadAuth = async () => {
       console.log('[Auth] Checking for context parameter...');
+      // Check if user just switched accounts via WordPress account switcher plugin
+      const userSwitched = searchParams?.get('user_switched') || searchParams?.get('switched_back');
+
+      if (userSwitched) {
+        console.log('[Auth] 🔄 Detected WordPress account switch - clearing old session data');
+        sessionStorage.clear();
+      }
+
       const token = searchParams?.get('context');
 
       if (token) {

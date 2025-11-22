@@ -11,16 +11,22 @@ import { ApplicationPipeline } from '@/components/dashboard/ApplicationPipeline'
 import { ToolkitGrid } from '@/components/dashboard/ToolkitGrid'
 import { SmartSuggestionsWidget } from '@/components/dashboard/SmartSuggestionsWidget'
 import { WelcomeBanner } from '@/components/ui/WelcomeBanner'
-import { getUserId } from '@/lib/utils/getUserId'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Client Component - Fetches data via API route
 export default function DashboardPage() {
+  const { wpUserId, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<any>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      const userId = getUserId()
+      // Wait for authentication to complete
+      if (authLoading) {
+        return
+      }
+
+      const userId = wpUserId
 
       if (!userId) {
         console.error('[Dashboard] No user ID available')
@@ -32,7 +38,7 @@ export default function DashboardPage() {
         // Fetch dashboard data from API route
         const response = await fetch('/api/dashboard', {
           headers: {
-            'x-user-id': userId,
+            'x-user-id': String(userId),
           },
         })
 
@@ -50,7 +56,17 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [])
+  }, [wpUserId, authLoading])
+
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">Authenticating...</div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   if (loading) {
     return (

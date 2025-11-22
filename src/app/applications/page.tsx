@@ -3,16 +3,23 @@
 import { useState, useEffect } from 'react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { KanbanClient } from '@/components/applications/KanbanClient'
-import { getUserId } from '@/lib/utils/getUserId'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function ApplicationsPage() {
+  const { wpUserId, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<any[]>([])
   const [total, setTotal] = useState(0)
 
   useEffect(() => {
+    // ✅ FIX: Wait for auth to complete before fetching data
+    if (authLoading) {
+      console.log('[Applications] Waiting for authentication...')
+      return
+    }
+
     const fetchData = async () => {
-      const userId = getUserId()
+      const userId = wpUserId
 
       if (!userId) {
         console.error('[Applications] No user ID available')
@@ -20,11 +27,13 @@ export default function ApplicationsPage() {
         return
       }
 
+      console.log('[Applications] Fetching applications for WordPress user:', userId)
+
       try {
         // Fetch all applications via API route
         const response = await fetch('/api/applications?limit=200', {
           headers: {
-            'x-user-id': userId,
+            'x-user-id': String(userId),
           },
         })
 
@@ -43,13 +52,15 @@ export default function ApplicationsPage() {
     }
 
     fetchData()
-  }, [])
+  }, [wpUserId, authLoading])
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-400">Loading applications...</div>
+          <div className="text-gray-400">
+            {authLoading ? 'Authenticating...' : 'Loading applications...'}
+          </div>
         </div>
       </DashboardLayout>
     )

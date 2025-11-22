@@ -3,17 +3,23 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ApplicationsClient } from '@/components/applications/ApplicationsClient'
-import { getUserId } from '@/lib/utils/getUserId'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function ApplicationsTableContent() {
   const searchParams = useSearchParams()
+  const { wpUserId, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<any[]>([])
   const [total, setTotal] = useState(0)
 
   useEffect(() => {
     const fetchData = async () => {
-      const userId = getUserId()
+      // Wait for authentication to complete
+      if (authLoading) {
+        return
+      }
+
+      const userId = wpUserId
 
       if (!userId) {
         console.error('[ApplicationsTable] No user ID available')
@@ -36,7 +42,7 @@ export default function ApplicationsTableContent() {
         // Fetch applications via API route
         const response = await fetch(`/api/applications?${params.toString()}`, {
           headers: {
-            'x-user-id': userId,
+            'x-user-id': String(userId),
           },
         })
 
@@ -55,7 +61,15 @@ export default function ApplicationsTableContent() {
     }
 
     fetchData()
-  }, [searchParams])
+  }, [searchParams, wpUserId, authLoading])
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Authenticating...</div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (

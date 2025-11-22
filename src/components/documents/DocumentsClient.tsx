@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { DocumentCard } from './DocumentCard'
 import { UploadDocumentModal } from './UploadDocumentModal'
-import { getUserId } from '@/lib/utils/getUserId'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Document {
   id: string
@@ -20,15 +20,21 @@ interface Document {
 }
 
 export const DocumentsClient: React.FC = () => {
+  const { wpUserId, loading: authLoading } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
   const fetchDocuments = async () => {
+    // Wait for authentication to complete
+    if (authLoading) {
+      return
+    }
+
     try {
       setLoading(true)
-      const userId = getUserId()
+      const userId = wpUserId
 
       if (!userId) {
         console.error('[DocumentsClient] No user ID available')
@@ -42,7 +48,7 @@ export const DocumentsClient: React.FC = () => {
 
       const response = await fetch(url, {
         headers: {
-          'x-user-id': userId,
+          'x-user-id': String(userId),
         },
       })
       const data = await response.json()
@@ -61,13 +67,13 @@ export const DocumentsClient: React.FC = () => {
 
   useEffect(() => {
     fetchDocuments()
-  }, [filter])
+  }, [filter, wpUserId, authLoading])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this document?')) return
 
     try {
-      const userId = getUserId()
+      const userId = wpUserId
 
       if (!userId) {
         console.error('[DocumentsClient] No user ID available')
@@ -77,7 +83,7 @@ export const DocumentsClient: React.FC = () => {
       const response = await fetch(`/api/documents?id=${id}`, {
         method: 'DELETE',
         headers: {
-          'x-user-id': userId,
+          'x-user-id': String(userId),
         },
       })
 
@@ -130,6 +136,15 @@ export const DocumentsClient: React.FC = () => {
     { value: 'portfolio', label: 'Portfolios', icon: '💼' },
     { value: 'reference', label: 'References', icon: '📝' },
   ]
+
+  // Show authenticating state first
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Authenticating...</div>
+      </div>
+    )
+  }
 
   return (
     <div>

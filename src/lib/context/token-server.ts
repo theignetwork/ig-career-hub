@@ -7,12 +7,12 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 
 // Server-side secret - NEVER exposed to client
 const SECRET = new TextEncoder().encode(
-  process.env.CONTEXT_SHARING_SECRET
+  process.env.JWT_SECRET
 )
 
-if (!SECRET || !process.env.CONTEXT_SHARING_SECRET) {
-  console.error('[token-server] CONTEXT_SHARING_SECRET not configured!')
-  throw new Error('CONTEXT_SHARING_SECRET environment variable is required')
+if (!SECRET || !process.env.JWT_SECRET) {
+  console.error('[token-server] JWT_SECRET not configured!')
+  throw new Error('JWT_SECRET environment variable is required')
 }
 
 export interface TokenPayload extends JWTPayload {

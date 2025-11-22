@@ -16,7 +16,10 @@ if (!SECRET || !process.env.JWT_SECRET) {
 }
 
 export interface TokenPayload extends JWTPayload {
-  userId: string
+  user_id: number  // WordPress user ID (snake_case to match Resume Analyzer)
+  email: string  // WordPress user email
+  name: string  // WordPress user name
+  membership_level: string  // WordPress membership level
   applicationId: string
   scope: 'read' | 'read-write'
   iat: number
@@ -35,13 +38,18 @@ export interface TokenPayload extends JWTPayload {
 /**
  * Generate a JWT token for context sharing
  * SERVER-SIDE ONLY
- * @param userId - WordPress user ID
+ * @param wpUserData - WordPress user data (from JWT auth)
  * @param applicationId - Application UUID
  * @param applicationData - Full application data for auto-fill
  * @param expiresInMinutes - Token expiration (default 15 minutes)
  */
 export async function generateContextToken(
-  userId: string,
+  wpUserData: {
+    user_id: number
+    email: string
+    name: string
+    membership_level: string
+  },
   applicationId: string,
   applicationData: {
     companyName: string
@@ -59,12 +67,12 @@ export async function generateContextToken(
   const exp = iat + (expiresInMinutes * 60)
 
   const token = await new SignJWT({
-    userId,
+    ...wpUserData,  // Include WordPress user data (user_id, email, name, membership_level)
     applicationId,
     scope: 'read',
     iat,
     exp,
-    ...applicationData,
+    ...applicationData,  // Include application data for auto-fill
   } as TokenPayload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt(iat)

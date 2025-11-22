@@ -9,15 +9,21 @@ import { authenticatedPost } from '@/lib/utils/authenticatedFetch'
 /**
  * Build a complete ToolContext from an application
  * @param application - Application data from database
- * @param userId - Current user ID (from WordPress auth)
+ * @param wpUserData - WordPress user data (from JWT auth)
  */
 export async function buildToolContext(
   application: Application,
-  userId: string
+  wpUserData: {
+    user_id: number
+    email: string
+    name: string
+    membership_level: string
+  }
 ): Promise<ToolContext> {
   // Call server API to generate token (keeps secret server-side!)
   const response = await authenticatedPost('/api/context/generate', {
-    applicationId: application.id
+    applicationId: application.id,
+    wpUserData  // Pass WordPress user data to include in token
   })
 
   if (!response.ok) {
@@ -31,7 +37,7 @@ export async function buildToolContext(
     source: 'career-hub',
     version: '1.0',
     timestamp: Date.now(),
-    userId,
+    userId: wpUserData.user_id.toString(),
     applicationId: application.id,
     companyName: application.company_name,
     positionTitle: application.position_title,

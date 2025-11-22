@@ -19,13 +19,28 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get application ID from request
-    const { applicationId } = await request.json()
+    // Get WordPress user data and application ID from request
+    const { applicationId, wpUserData } = await request.json()
 
     if (!applicationId) {
       return NextResponse.json(
         { error: 'Application ID is required' },
         { status: 400 }
+      )
+    }
+
+    if (!wpUserData || !wpUserData.user_id || !wpUserData.email || !wpUserData.name || !wpUserData.membership_level) {
+      return NextResponse.json(
+        { error: 'WordPress user data is required' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the user ID matches
+    if (wpUserData.user_id.toString() !== userId) {
+      return NextResponse.json(
+        { error: 'User ID mismatch' },
+        { status: 403 }
       )
     }
 
@@ -58,7 +73,7 @@ export async function POST(request: Request) {
     }
 
     // Generate JWT token server-side (secret never exposed to client!)
-    const token = await generateContextToken(userId, application.id, applicationData, 15)
+    const token = await generateContextToken(wpUserData, application.id, applicationData, 15)
 
     console.log(`[POST /api/context/generate] Token generated for user ${userId}, app ${applicationId}`)
 

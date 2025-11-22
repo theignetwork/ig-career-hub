@@ -7,6 +7,7 @@
 import { useCallback } from 'react'
 import { buildToolContext } from './builder'
 import { buildToolUrl } from './encoder'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Application } from '@/lib/api/applications'
 import type { ToolType } from './types'
 
@@ -21,11 +22,12 @@ const TOOL_URLS: Record<ToolType, string> = {
 }
 
 export function useToolLauncher() {
+  const { user } = useAuth()
+
   const launchTool = useCallback(
     async (
       toolType: ToolType,
-      application?: Application,
-      userId: string = 'demo-user-123' // TODO: Get from auth context
+      application?: Application
     ) => {
       const baseUrl = TOOL_URLS[toolType]
       if (!baseUrl) {
@@ -39,10 +41,22 @@ export function useToolLauncher() {
         return
       }
 
+      // Ensure we have WordPress user data
+      if (!user || !user.user_id) {
+        console.error('[Tool Launcher] No WordPress user data available')
+        window.open(baseUrl, '_blank')
+        return
+      }
+
       try {
-        // Build context with JWT token
+        // Build context with JWT token (includes WordPress user data)
         console.log('[Tool Launcher] Building context for:', application.company_name)
-        const context = await buildToolContext(application, userId)
+        const context = await buildToolContext(application, {
+          user_id: user.user_id,
+          email: user.email,
+          name: user.name,
+          membership_level: user.membership_level
+        })
         console.log('[Tool Launcher] Context built, token length:', context.token.length)
 
         // Build URL with context parameter
@@ -65,7 +79,7 @@ export function useToolLauncher() {
         window.open(baseUrl, '_blank')
       }
     },
-    []
+    [user]
   )
 
   return { launchTool }

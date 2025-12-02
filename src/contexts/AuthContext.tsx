@@ -42,7 +42,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         sessionStorage.clear();
       }
 
-      const token = searchParams?.get('context');
+      // Check multiple sources for JWT token:
+      // 1. URL parameter ?context=<JWT> (for direct links)
+      // 2. Global variable set by WordPress (for embedded pages)
+      // 3. sessionStorage (for page refreshes)
+      let token = searchParams?.get('context');
+
+      if (!token && typeof window !== 'undefined') {
+        // Check for global variable set by WordPress PHP snippet
+        const globalToken = (window as any).__IG_CAREER_HUB_JWT__;
+        if (globalToken) {
+          console.log('[Auth] Found JWT from WordPress global variable');
+          token = globalToken;
+        }
+      }
 
       if (token) {
         try {

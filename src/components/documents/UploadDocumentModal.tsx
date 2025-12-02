@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import { awardXP } from '@/lib/gamification/award-xp'
 import { XP_REWARDS } from '@/lib/gamification/xp-system'
 
@@ -17,6 +18,7 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
   onSuccess,
 }) => {
   const router = useRouter()
+  const { wpUserId } = useAuth()
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -72,6 +74,10 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
     setError(null)
 
     try {
+      if (!wpUserId) {
+        throw new Error('You must be logged in to upload documents')
+      }
+
       const uploadFormData = new FormData()
       uploadFormData.append('file', formData.file)
       uploadFormData.append('documentType', formData.documentType)
@@ -79,6 +85,9 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
+        headers: {
+          'x-user-id': String(wpUserId),
+        },
         body: uploadFormData,
       })
 

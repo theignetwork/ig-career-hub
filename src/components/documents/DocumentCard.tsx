@@ -9,10 +9,6 @@ interface Document {
   file_name: string
   file_size: number
   content: string // Public URL stored in content field
-  times_used?: number
-  applications_count?: number
-  interviews_received?: number
-  success_rate?: number | null
   created_at: string
 }
 
@@ -20,14 +16,12 @@ interface DocumentCardProps {
   document: Document
   onDelete: (id: string) => void
   onDownload: (url: string, fileName: string) => void
-  onSetPrimary: (id: string) => void
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   document,
   onDelete,
   onDownload,
-  onSetPrimary,
 }) => {
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -98,24 +92,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         <div className="flex items-center gap-1">
           <span>📅</span>
           <span>{formatDate(document.created_at)}</span>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-2xl font-bold text-white">{document.times_used || 0}</div>
-          <div className="text-xs text-gray-400">Times Used</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-2xl font-bold text-white">{document.applications_count || 0}</div>
-          <div className="text-xs text-gray-400">Applications</div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="text-2xl font-bold text-[#0D9488]">
-            {document.success_rate ? `${document.success_rate.toFixed(0)}%` : '—'}
-          </div>
-          <div className="text-xs text-gray-400">Success Rate</div>
         </div>
       </div>
 

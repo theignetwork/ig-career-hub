@@ -12,10 +12,6 @@ interface Document {
   file_name: string
   file_size: number
   content: string // Public URL stored in content field
-  times_used?: number
-  applications_count?: number
-  interviews_received?: number
-  success_rate?: number | null
   created_at: string
 }
 
@@ -117,11 +113,6 @@ export const DocumentsClient: React.FC = () => {
     }
   }
 
-  const handleSetPrimary = async (id: string) => {
-    // Not implemented - documents table doesn't have is_primary column
-    console.log('Set primary not implemented yet')
-  }
-
   const getFilteredDocuments = () => {
     if (filter === 'all') return documents
     return documents.filter((doc) => doc.file_type === filter)
@@ -133,8 +124,6 @@ export const DocumentsClient: React.FC = () => {
     { value: 'all', label: 'All Documents', icon: '📚' },
     { value: 'resume', label: 'Resumes', icon: '📄' },
     { value: 'cover_letter', label: 'Cover Letters', icon: '✉️' },
-    { value: 'portfolio', label: 'Portfolios', icon: '💼' },
-    { value: 'reference', label: 'References', icon: '📝' },
   ]
 
   // Show authenticating state first
@@ -227,7 +216,6 @@ export const DocumentsClient: React.FC = () => {
               document={document}
               onDelete={handleDelete}
               onDownload={handleDownload}
-              onSetPrimary={handleSetPrimary}
             />
           ))}
         </div>

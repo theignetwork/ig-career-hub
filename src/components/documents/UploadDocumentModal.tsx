@@ -25,7 +25,7 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
   const [formData, setFormData] = useState({
     file: null as File | null,
-    documentType: 'resume' as 'resume' | 'cover_letter' | 'portfolio' | 'reference' | 'other',
+    documentType: 'resume' as 'resume' | 'cover_letter',
     title: '',
   })
 
@@ -214,8 +214,6 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
               {[
                 { value: 'resume', label: 'Resume', icon: '📄' },
                 { value: 'cover_letter', label: 'Cover Letter', icon: '✉️' },
-                { value: 'portfolio', label: 'Portfolio', icon: '💼' },
-                { value: 'reference', label: 'Reference', icon: '📝' },
               ].map((type) => (
                 <button
                   key={type.value}

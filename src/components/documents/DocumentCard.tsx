@@ -9,6 +9,7 @@ interface Document {
   file_name: string
   file_size: number
   content: string // Public URL stored in content field
+  is_primary?: boolean
   created_at: string
 }
 
@@ -16,12 +17,14 @@ interface DocumentCardProps {
   document: Document
   onDelete: (id: string) => void
   onDownload: (url: string, fileName: string) => void
+  onSetPrimary: (id: string) => void
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   document,
   onDelete,
   onDownload,
+  onSetPrimary,
 }) => {
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -73,6 +76,11 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-white font-semibold text-lg truncate">{document.title}</h3>
+              {document.is_primary && (
+                <span className="px-2 py-0.5 bg-[#0D9488] text-white text-xs font-medium rounded-full">
+                  Primary
+                </span>
+              )}
             </div>
             <p className="text-gray-400 text-sm">{getTypeLabel(document.file_type)}</p>
           </div>
@@ -103,6 +111,15 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         >
           Download
         </button>
+        {!document.is_primary && (
+          <button
+            onClick={() => onSetPrimary(document.id)}
+            className="px-4 py-2 border-2 border-[#0D9488]/50 text-[#0D9488] rounded-lg text-sm font-medium hover:bg-[#0D9488]/10 transition-colors"
+            title="Set as primary document"
+          >
+            Set Primary
+          </button>
+        )}
         <button
           onClick={() => onDelete(document.id)}
           className="px-4 py-2 border-2 border-red-500/50 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/10 transition-colors"

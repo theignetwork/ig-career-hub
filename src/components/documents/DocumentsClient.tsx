@@ -12,6 +12,7 @@ interface Document {
   file_name: string
   file_size: number
   content: string // Public URL stored in content field
+  is_primary?: boolean
   created_at: string
 }
 
@@ -110,6 +111,33 @@ export const DocumentsClient: React.FC = () => {
       window.URL.revokeObjectURL(downloadUrl)
     } catch (error) {
       console.error('Error downloading document:', error)
+    }
+  }
+
+  const handleSetPrimary = async (id: string) => {
+    try {
+      const userId = wpUserId
+
+      if (!userId) {
+        console.error('[DocumentsClient] No user ID available')
+        return
+      }
+
+      const response = await fetch(`/api/documents/${id}/set-primary`, {
+        method: 'POST',
+        headers: {
+          'x-user-id': String(userId),
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to set primary document')
+      }
+
+      // Refetch to update is_primary flags
+      fetchDocuments()
+    } catch (error) {
+      console.error('Error setting primary document:', error)
     }
   }
 
@@ -216,6 +244,7 @@ export const DocumentsClient: React.FC = () => {
               document={document}
               onDelete={handleDelete}
               onDownload={handleDownload}
+              onSetPrimary={handleSetPrimary}
             />
           ))}
         </div>
